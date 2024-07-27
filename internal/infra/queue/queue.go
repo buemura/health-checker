@@ -1,18 +1,14 @@
 package queue
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
-	"github.com/buemura/health-checker/config"
-	"github.com/buemura/health-checker/internal/core/dto"
-	"github.com/buemura/health-checker/internal/core/usecase"
-	"github.com/buemura/health-checker/internal/infra/database"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const NOTIFY_ENDPOINT_DOWN_QUEUE = "notify.endpoint.down"
+const NOTIFY_ENDPOINT_DOWN_DLQ = "notify.endpoint.down.dlq"
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -20,70 +16,23 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func StartConsume() {
-	// Connect to rabbitmq broker
-	conn, err := amqp.Dial(config.BROKER_URL)
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
-
-	// Open channel
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
-
-	// Declare/Create Queue
-	_, err = ch.QueueDeclare(
-		NOTIFY_ENDPOINT_DOWN_QUEUE, // name
-		false,                      // durable
-		false,                      // delete when unused
-		false,                      // exclusive
-		false,                      // no-wait
-		nil,                        // arguments
+func DeclareQueue(ch *amqp.Channel, queue string) {
+	_, err := ch.QueueDeclare(
+		queue, // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
-
-	// Consume Queue
-	msgs, err := ch.Consume(
-		NOTIFY_ENDPOINT_DOWN_QUEUE, // queue
-		"",                         // consumer
-		true,                       // auto-ack
-		false,                      // exclusive
-		false,                      // no-local
-		false,                      // no-wait
-		nil,                        // args
-	)
-	failOnError(err, "Failed to register a consumer")
-
-	var forever chan struct{}
-
-	go func() {
-		for d := range msgs {
-			log.Printf("Consumed messagem from queue: notify.endpoint.down")
-
-			switch d.RoutingKey {
-			case NOTIFY_ENDPOINT_DOWN_QUEUE:
-				var in *dto.CreateEndpointIn
-				err := json.Unmarshal([]byte(d.Body), &in)
-				if err != nil {
-					log.Fatalf(err.Error())
-				}
-
-				er := database.NewEndpointRepositoryImpl(database.DB)
-				uc := usecase.NewCreateEndpoint(er)
-				uc.Execute(in)
-			}
-		}
-	}()
-
-	fmt.Println("⇨ RabbitMQ Consumer started")
-	<-forever
 }
 
 func Consume(ch *amqp.Channel, out chan<- amqp.Delivery, queue string) error {
 	msgs, err := ch.Consume(
 		queue,
 		"go-consumer",
-		false,
+		true,
 		false,
 		false,
 		false,
@@ -92,6 +41,8 @@ func Consume(ch *amqp.Channel, out chan<- amqp.Delivery, queue string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("⇨ Consuming Queue: %s\n", queue)
 	for msg := range msgs {
 		out <- msg
 	}
@@ -99,9 +50,30 @@ func Consume(ch *amqp.Channel, out chan<- amqp.Delivery, queue string) error {
 }
 
 func Publish(ch *amqp.Channel, body string, exName string) error {
+	log.Printf("Sending messagem to exchange: %s", exName)
+
 	err := ch.Publish(
 		exName,
 		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(body),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PublishToQueue(ch *amqp.Channel, body string, queue string) error {
+	log.Printf("Sending messagem to queue: %s", queue)
+
+	err := ch.Publish(
+		"",
+		queue,
 		false,
 		false,
 		amqp.Publishing{
