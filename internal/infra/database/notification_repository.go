@@ -1,22 +1,23 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"time"
 
 	"github.com/buemura/health-checker/internal/core/entity"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type NotificationRepositoryImpl struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewNotificationRepositoryImpl(db *sql.DB) *NotificationRepositoryImpl {
+func NewNotificationRepositoryImpl(db *pgxpool.Pool) *NotificationRepositoryImpl {
 	return &NotificationRepositoryImpl{db: db}
 }
 
 func (r *NotificationRepositoryImpl) Create(n *entity.Notification) (*entity.Notification, error) {
-	_, err := r.db.Exec("INSERT INTO notifications (id, endpoint_id, destination, created_at) VALUES ($1, $2, $3, $4)",
+	_, err := r.db.Exec(context.Background(), "INSERT INTO notifications (id, endpoint_id, destination, created_at) VALUES ($1, $2, $3, $4)",
 		n.ID, n.EndpointID, n.Destination, n.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -25,7 +26,7 @@ func (r *NotificationRepositoryImpl) Create(n *entity.Notification) (*entity.Not
 }
 
 func (r *NotificationRepositoryImpl) FindAll() ([]*entity.Notification, error) {
-	rows, err := r.db.Query("SELECT id, endpoint_id, destination, created_at FROM notifications")
+	rows, err := r.db.Query(context.Background(), "SELECT id, endpoint_id, destination, created_at FROM notifications")
 	if err != nil {
 		return nil, err
 	}

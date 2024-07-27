@@ -1,22 +1,23 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"time"
 
 	"github.com/buemura/health-checker/internal/core/entity"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type EndpointRepositoryImpl struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewEndpointRepositoryImpl(db *sql.DB) *EndpointRepositoryImpl {
+func NewEndpointRepositoryImpl(db *pgxpool.Pool) *EndpointRepositoryImpl {
 	return &EndpointRepositoryImpl{db: db}
 }
 
 func (r *EndpointRepositoryImpl) Create(e *entity.Endpoint) (*entity.Endpoint, error) {
-	_, err := r.db.Exec("INSERT INTO endpoints (id, name, url, status, check_frequency, last_checked, notify_to) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+	_, err := r.db.Exec(context.Background(), "INSERT INTO endpoints (id, name, url, status, check_frequency, last_checked, notify_to) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		e.ID, e.Name, e.Url, e.Status, e.CheckFrequency, e.LastChecked, e.NotifyTo)
 	if err != nil {
 		return nil, err
@@ -25,7 +26,7 @@ func (r *EndpointRepositoryImpl) Create(e *entity.Endpoint) (*entity.Endpoint, e
 }
 
 func (r *EndpointRepositoryImpl) FindAll() ([]*entity.Endpoint, error) {
-	rows, err := r.db.Query("SELECT id, name, url, status, check_frequency, last_checked, notify_to FROM endpoints")
+	rows, err := r.db.Query(context.Background(), "SELECT id, name, url, status, check_frequency, last_checked, notify_to FROM endpoints")
 	if err != nil {
 		return nil, err
 	}

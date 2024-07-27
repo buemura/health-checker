@@ -1,21 +1,31 @@
 package database
 
 import (
-	"database/sql"
-	"log"
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/buemura/health-checker/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var DB *sql.DB
+var (
+	DB *pgxpool.Pool
+)
 
 func Connect() {
-	// psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-	// 	"password=%s dbname=%s sslmode=disable",
-	// 	config.DB_HOST, config.DB_PORT, config.DB_USER, config.DB_PASS, config.DB_DATABASE)
-	// DB, err := sql.Open("postgres", psqlInfo)
-
-	DB, err := sql.Open("sqlite3", "./data.db")
+	dbConfig, err := pgxpool.ParseConfig(config.DATABASE_URL)
 	if err != nil {
-		log.Fatalf("failed to open database: %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to create pool config: %v\n", err)
+		os.Exit(1)
 	}
-	defer DB.Close()
+
+	dbConfig.MaxConns = 10
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), dbConfig)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	DB = pool
 }
