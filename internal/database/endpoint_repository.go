@@ -1,0 +1,54 @@
+package database
+
+import (
+	"database/sql"
+	"time"
+
+	"github.com/buemura/health-checker/internal/entity"
+)
+
+type EndpointRepositoryImpl struct {
+	db *sql.DB
+}
+
+func NewEndpointRepositoryImpl(db *sql.DB) *EndpointRepositoryImpl {
+	return &EndpointRepositoryImpl{db: db}
+}
+
+func (r *EndpointRepositoryImpl) Create(e *entity.Endpoint) (*entity.Endpoint, error) {
+	_, err := r.db.Exec("INSERT INTO endpoints (id, name, url, status, check_frequency, last_checked, notify_to) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		e.ID, e.Name, e.Url, e.Status, e.CheckFrequency, e.LastChecked, e.NotifyTo)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func (r *EndpointRepositoryImpl) FindAll() ([]*entity.Endpoint, error) {
+	rows, err := r.db.Query("SELECT id, name, url, status, check_frequency, last_checked, notify_to FROM endpoints")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	endpoints := []*entity.Endpoint{}
+	for rows.Next() {
+		var id, name, url, status, notifyTo string
+		var checkFrequency int
+		var lastChecked time.Time
+
+		if err := rows.Scan(&id, &name, &url, &status, &checkFrequency, &lastChecked, &notifyTo); err != nil {
+			return nil, err
+		}
+		endpoints = append(endpoints, &entity.Endpoint{
+			ID:             id,
+			Name:           name,
+			Url:            url,
+			Status:         status,
+			CheckFrequency: checkFrequency,
+			LastChecked:    &lastChecked,
+			NotifyTo:       notifyTo,
+		})
+	}
+	return endpoints, nil
+}
