@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/buemura/health-checker/internal/database"
-	"github.com/buemura/health-checker/internal/dto"
-	"github.com/buemura/health-checker/internal/usecase"
+	"github.com/buemura/health-checker/internal/core/dto"
+	"github.com/buemura/health-checker/internal/core/usecase"
+	"github.com/buemura/health-checker/internal/infra/database"
 	"github.com/labstack/echo/v4"
 )
 

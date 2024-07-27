@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/buemura/health-checker/internal/entity"
+	"github.com/buemura/health-checker/internal/core/entity"
 )
 
 type NotificationRepositoryImpl struct {

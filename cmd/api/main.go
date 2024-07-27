@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/buemura/health-checker/config"
-	"github.com/buemura/health-checker/internal/database"
-	"github.com/buemura/health-checker/internal/hanlder"
+	"github.com/buemura/health-checker/internal/infra/database"
+	"github.com/buemura/health-checker/internal/infra/hanlder"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

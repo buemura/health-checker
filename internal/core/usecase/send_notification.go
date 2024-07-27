@@ -3,8 +3,8 @@ package usecase
 import (
 	"log"
 
-	"github.com/buemura/health-checker/internal/entity"
-	"github.com/buemura/health-checker/internal/repository"
+	"github.com/buemura/health-checker/internal/core/entity"
+	"github.com/buemura/health-checker/internal/core/repository"
 )
 
 type SendNotification struct {

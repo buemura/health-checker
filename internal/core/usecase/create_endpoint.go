@@ -3,9 +3,9 @@ package usecase
 import (
 	"crypto/rand"
 
-	"github.com/buemura/health-checker/internal/dto"
-	"github.com/buemura/health-checker/internal/entity"
-	"github.com/buemura/health-checker/internal/repository"
+	"github.com/buemura/health-checker/internal/core/dto"
+	"github.com/buemura/health-checker/internal/core/entity"
+	"github.com/buemura/health-checker/internal/core/repository"
 	"github.com/lucsky/cuid"
 )
 
