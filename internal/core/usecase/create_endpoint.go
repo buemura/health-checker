@@ -27,7 +27,6 @@ func (uc *CreateEndpoint) Execute(in *dto.CreateEndpointIn) (*entity.Endpoint, e
 		ID:             cuid,
 		Name:           in.Name,
 		Url:            in.Url,
-		Status:         in.Status,
 		CheckFrequency: in.CheckFrequency,
 		NotifyTo:       in.NotifyTo,
 	})

@@ -1,12 +1,8 @@
 package dto
 
-import "time"
-
 type CreateEndpointIn struct {
-	Name           string
-	Url            string
-	Status         string
-	CheckFrequency int
-	LastChecked    time.Time
-	NotifyTo       string
+	Name           string `json:"name"`
+	Url            string `json:"url"`
+	CheckFrequency int    `json:"check_frequency"`
+	NotifyTo       string `json:"notify_to"`
 }

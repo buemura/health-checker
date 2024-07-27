@@ -2,9 +2,10 @@ package database
 
 import (
 	"context"
-	"time"
+	"log"
 
 	"github.com/buemura/health-checker/internal/core/entity"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,8 +18,8 @@ func NewEndpointRepositoryImpl(db *pgxpool.Pool) *EndpointRepositoryImpl {
 }
 
 func (r *EndpointRepositoryImpl) Create(e *entity.Endpoint) (*entity.Endpoint, error) {
-	_, err := r.db.Exec(context.Background(), "INSERT INTO endpoints (id, name, url, status, check_frequency, last_checked, notify_to) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-		e.ID, e.Name, e.Url, e.Status, e.CheckFrequency, e.LastChecked, e.NotifyTo)
+	_, err := r.db.Exec(context.Background(), "INSERT INTO endpoints (id, name, url, check_frequency, notify_to) VALUES ($1, $2, $3, $4, $5)",
+		e.ID, e.Name, e.Url, e.CheckFrequency, e.NotifyTo)
 	if err != nil {
 		return nil, err
 	}
@@ -32,24 +33,11 @@ func (r *EndpointRepositoryImpl) FindAll() ([]*entity.Endpoint, error) {
 	}
 	defer rows.Close()
 
-	endpoints := []*entity.Endpoint{}
-	for rows.Next() {
-		var id, name, url, status, notifyTo string
-		var checkFrequency int
-		var lastChecked time.Time
-
-		if err := rows.Scan(&id, &name, &url, &status, &checkFrequency, &lastChecked, &notifyTo); err != nil {
-			return nil, err
-		}
-		endpoints = append(endpoints, &entity.Endpoint{
-			ID:             id,
-			Name:           name,
-			Url:            url,
-			Status:         status,
-			CheckFrequency: checkFrequency,
-			LastChecked:    &lastChecked,
-			NotifyTo:       notifyTo,
-		})
+	endpoints, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[entity.Endpoint])
+	if err != nil {
+		log.Fatal(err.Error())
+		return nil, err
 	}
+
 	return endpoints, nil
 }

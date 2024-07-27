@@ -3,7 +3,7 @@ CREATE UNLOGGED TABLE endpoints (
 	id TEXT PRIMARY KEY,
 	name TEXT NOT NULL,
 	url TEXT NOT NULL,
-	status TEXT NOT NULL,
+	status TEXT,
 	check_frequency INTEGER NOT NULL,
 	last_checked TIMESTAMP,
 	notify_to TEXT NOT NULL
