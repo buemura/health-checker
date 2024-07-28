@@ -6,7 +6,7 @@ Health Checker is a comprehensive application designed to monitor and manage the
 
 ![cli](./docs/cli.png)
 
-## Showcase
+## Architecture Diagran
 
 ![arch](./docs/arch-diagram.png)
 
