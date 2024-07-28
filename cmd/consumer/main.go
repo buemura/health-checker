@@ -52,6 +52,7 @@ func main() {
 			notificationEvent := event.NewNotificationEvent()
 			_, err = notificationEvent.SendNotification(in)
 			if err != nil {
+				log.Println(err)
 				err = queue.PublishToQueue(ch, string(msg.Body), queue.NOTIFY_ENDPOINT_DOWN_DLQ)
 				if err != nil {
 					log.Fatalf("Failed to send message to DLQ queue: %s", err)

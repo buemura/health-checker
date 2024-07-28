@@ -4,6 +4,9 @@ dev-api:
 dev-consumer:
 	go run cmd/consumer/main.go
 
+dev-cli:
+	go run cmd/cli/main.go
+
 docker-up:
 	docker-compose up -d
 

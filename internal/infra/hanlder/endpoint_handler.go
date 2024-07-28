@@ -11,6 +11,10 @@ import (
 )
 
 func SetupRoutes(e *echo.Echo) {
+	e.GET("/health", func(c echo.Context) error {
+		return c.JSON(200, nil)
+	})
+
 	e.GET("/endpoints", getEndpoint)
 	e.POST("/endpoints", createEndpoint)
 }

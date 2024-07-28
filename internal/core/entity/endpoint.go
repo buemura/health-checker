@@ -6,8 +6,8 @@ type Endpoint struct {
 	ID             string
 	Name           string
 	Url            string
-	Status         *string
+	Status         string
 	CheckFrequency int
-	LastChecked    *time.Time
+	LastChecked    time.Time
 	NotifyTo       string
 }

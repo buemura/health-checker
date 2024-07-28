@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"crypto/rand"
+	"time"
 
 	"github.com/buemura/health-checker/internal/core/dto"
 	"github.com/buemura/health-checker/internal/core/entity"
@@ -27,7 +28,9 @@ func (uc *CreateEndpoint) Execute(in *dto.CreateEndpointIn) (*entity.Endpoint, e
 		ID:             cuid,
 		Name:           in.Name,
 		Url:            in.Url,
+		Status:         "UP",
 		CheckFrequency: in.CheckFrequency,
+		LastChecked:    time.Now(),
 		NotifyTo:       in.NotifyTo,
 	})
 	if err != nil {
