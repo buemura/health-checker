@@ -10,6 +10,28 @@ Health Checker is a comprehensive application designed to monitor and manage the
 
 ![arch](./docs/arch-diagram.png)
 
+## How to run
+
+1. Prepare the environment
+
+```bash
+docker-compose up -d
+```
+
+2. Run all applications
+
+```bash
+go run cmd/api/main.go
+```
+
+```bash
+go run cmd/cli/main.go
+```
+
+```bash
+go run cmd/consumer/main.go
+```
+
 ## Components
 
 ### API
