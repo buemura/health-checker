@@ -4,14 +4,19 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/buemura/health-checker/config"
 	"github.com/buemura/health-checker/internal/core/dto"
+	"github.com/buemura/health-checker/internal/core/entity"
 	"github.com/buemura/health-checker/internal/core/usecase"
 	"github.com/buemura/health-checker/internal/infra/database"
 	"github.com/buemura/health-checker/internal/infra/queue"
 	"github.com/go-co-op/gocron/v2"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -62,7 +67,19 @@ func validateEndpoint() {
 		log.Fatalln(err.Error())
 	}
 
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
+
+	t := table.NewWriter()
+	t.SetStyle(table.StyleLight)
+	t.Style().Options.SeparateRows = true
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"ID", "Name", "URL", "Status", "Frequency (min)", "Last Checked", "Notify To"})
+
 	for _, endpoint := range endpoints {
+		RenderTable(t, endpoint)
+
 		lastChecked := time.Now().Sub(endpoint.LastChecked.Add(3 * time.Hour)).Minutes()
 
 		if int(lastChecked) > endpoint.CheckFrequency {
@@ -82,12 +99,18 @@ func validateEndpoint() {
 				endpoint.Status = "UP"
 			}
 			updateEndpointUC.Execute(endpoint)
-
-		} else {
-			log.Println("Skipping endpoint check:", endpoint.Url)
 		}
-
 	}
+
+	t.Render()
+}
+
+func RenderTable(t table.Writer, e *entity.Endpoint) {
+	t.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 4, Colors: text.Colors{text.FgYellow}},
+	})
+	t.AppendRow(table.Row{e.ID, e.Name, e.Url, e.Status, e.CheckFrequency, e.LastChecked.Format("2006-02-01 15:04:05"), e.NotifyTo})
+
 }
 
 func sendNotification(in *dto.CreateNotificationIn) error {

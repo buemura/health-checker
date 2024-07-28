@@ -3,8 +3,10 @@ module github.com/buemura/health-checker
 go 1.22.2
 
 require (
+	github.com/buger/goterm v1.0.4
 	github.com/go-co-op/gocron/v2 v2.11.0
 	github.com/jackc/pgx/v5 v5.6.0
+	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lucsky/cuid v1.2.1
 	github.com/rabbitmq/amqp091-go v1.10.0
@@ -24,8 +26,10 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
