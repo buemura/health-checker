@@ -15,7 +15,8 @@ import (
 	"github.com/buemura/health-checker/internal/core/entity"
 	"github.com/buemura/health-checker/internal/core/usecase"
 	"github.com/buemura/health-checker/internal/infra/database"
-	"github.com/buemura/health-checker/internal/infra/queue"
+	"github.com/buemura/health-checker/internal/infra/event"
+	"github.com/buemura/health-checker/pkg/queue"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -136,7 +137,7 @@ func sendNotification(in *dto.CreateNotificationIn) error {
 		return err
 	}
 
-	err = queue.PublishToQueue(ch, string(payload), queue.NOTIFY_ENDPOINT_DOWN_QUEUE)
+	err = queue.PublishToQueue(ch, string(payload), event.NOTIFY_ENDPOINT_DOWN_QUEUE)
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/buemura/health-checker/internal/core/dto"
 	"github.com/buemura/health-checker/internal/infra/database"
 	"github.com/buemura/health-checker/internal/infra/event"
-	"github.com/buemura/health-checker/internal/infra/queue"
+	"github.com/buemura/health-checker/pkg/queue"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -32,17 +32,17 @@ func main() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	queue.DeclareQueue(ch, queue.NOTIFY_ENDPOINT_DOWN_QUEUE)
-	queue.DeclareQueue(ch, queue.NOTIFY_ENDPOINT_DOWN_DLQ)
+	queue.DeclareQueue(ch, event.NOTIFY_ENDPOINT_DOWN_QUEUE)
+	queue.DeclareQueue(ch, event.NOTIFY_ENDPOINT_DOWN_DLQ)
 
 	msgs := make(chan amqp.Delivery)
-	go queue.Consume(ch, msgs, queue.NOTIFY_ENDPOINT_DOWN_QUEUE)
+	go queue.Consume(ch, msgs, event.NOTIFY_ENDPOINT_DOWN_QUEUE)
 
 	for msg := range msgs {
 		log.Printf("Consumed messagem from queue: notify.endpoint.down")
 
 		switch msg.RoutingKey {
-		case queue.NOTIFY_ENDPOINT_DOWN_QUEUE:
+		case event.NOTIFY_ENDPOINT_DOWN_QUEUE:
 			var in *dto.CreateNotificationIn
 			err := json.Unmarshal([]byte(msg.Body), &in)
 			if err != nil {
@@ -53,7 +53,7 @@ func main() {
 			_, err = notificationEvent.SendNotification(in)
 			if err != nil {
 				log.Println(err)
-				err = queue.PublishToQueue(ch, string(msg.Body), queue.NOTIFY_ENDPOINT_DOWN_DLQ)
+				err = queue.PublishToQueue(ch, string(msg.Body), event.NOTIFY_ENDPOINT_DOWN_DLQ)
 				if err != nil {
 					log.Fatalf("Failed to send message to DLQ queue: %s", err)
 				}

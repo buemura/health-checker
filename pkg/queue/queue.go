@@ -7,9 +7,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-const NOTIFY_ENDPOINT_DOWN_QUEUE = "notify.endpoint.down"
-const NOTIFY_ENDPOINT_DOWN_DLQ = "notify.endpoint.down.dlq"
-
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Panicf("%s: %s", msg, err)

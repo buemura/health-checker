@@ -7,6 +7,9 @@ import (
 	"github.com/buemura/health-checker/internal/infra/database"
 )
 
+const NOTIFY_ENDPOINT_DOWN_QUEUE = "notify.endpoint.down"
+const NOTIFY_ENDPOINT_DOWN_DLQ = "notify.endpoint.down.dlq"
+
 type NotificationEvent struct {
 }
 
