@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/buemura/health-checker/config"
@@ -16,12 +18,17 @@ import (
 	"github.com/buemura/health-checker/internal/infra/queue"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/jedib0t/go-pretty/v6/text"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var (
 	ch *amqp.Channel
+)
+
+const (
+	colorReset = "\033[0m"
+	colorRed   = "\033[31m"
+	colorGreen = "\033[32m"
 )
 
 func init() {
@@ -67,20 +74,14 @@ func validateEndpoint() {
 		log.Fatalln(err.Error())
 	}
 
-	c := exec.Command("clear")
-	c.Stdout = os.Stdout
-	c.Run()
-
+	clearScreen()
 	t := table.NewWriter()
-	t.SetStyle(table.StyleLight)
-	t.Style().Options.SeparateRows = true
-	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"ID", "Name", "URL", "Status", "Frequency (min)", "Last Checked", "Notify To"})
+	renderTableHeader(t)
 
 	for _, endpoint := range endpoints {
-		RenderTable(t, endpoint)
+		renderTableRow(t, endpoint)
 
-		lastChecked := time.Now().Sub(endpoint.LastChecked.Add(3 * time.Hour)).Minutes()
+		lastChecked := time.Since(endpoint.LastChecked.Add(3 * time.Hour)).Minutes()
 
 		if int(lastChecked) > endpoint.CheckFrequency {
 			log.Println("Checking endpoint:", endpoint.Url)
@@ -105,12 +106,28 @@ func validateEndpoint() {
 	t.Render()
 }
 
-func RenderTable(t table.Writer, e *entity.Endpoint) {
-	t.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 4, Colors: text.Colors{text.FgYellow}},
-	})
-	t.AppendRow(table.Row{e.ID, e.Name, e.Url, e.Status, e.CheckFrequency, e.LastChecked.Format("2006-02-01 15:04:05"), e.NotifyTo})
+func clearScreen() {
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
+}
 
+func renderTableHeader(t table.Writer) {
+	t.SetStyle(table.StyleLight)
+	t.Style().Options.SeparateRows = true
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"ID", "Name", "URL", "Status", "Frequency (min)", "Last Checked", "Notify To"})
+}
+
+func renderTableRow(t table.Writer, e *entity.Endpoint) {
+	var status string
+	if strings.Contains(e.Status, "UP") {
+		status = fmt.Sprintf("%s%s%s", colorGreen, e.Status, colorReset)
+	} else {
+		status = fmt.Sprintf("%s%s%s", colorRed, e.Status, colorReset)
+	}
+
+	t.AppendRow(table.Row{e.ID, e.Name, e.Url, status, e.CheckFrequency, e.LastChecked.Format("2006-01-02 15:04:05"), e.NotifyTo})
 }
 
 func sendNotification(in *dto.CreateNotificationIn) error {

@@ -3,7 +3,6 @@ module github.com/buemura/health-checker
 go 1.22.2
 
 require (
-	github.com/buger/goterm v1.0.4
 	github.com/go-co-op/gocron/v2 v2.11.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/jedib0t/go-pretty/v6 v6.5.9
